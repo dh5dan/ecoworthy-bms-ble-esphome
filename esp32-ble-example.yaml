@@ -77,12 +77,10 @@ ecoworthy_bms:
       name: "BMS Spannung"
       web_server:
         sorting_weight: 0
-
     current:
       name: "BMS Strom"
       web_server:
         sorting_weight: 1
-
     soc:
       name: "BMS Ladezustand"
       web_server:
@@ -95,7 +93,6 @@ ecoworthy_bms:
       name: "BMS Kapazität"
       web_server:
         sorting_weight: 4
-
     battery_health:
       name: "BMS Batteriezustand (SoH)"
       web_server:
@@ -104,12 +101,21 @@ ecoworthy_bms:
       name: "BMS Fehlercode"
       web_server:
         sorting_weight: 6
-
     temperature1:
       name: "BMS Temperatur 1"
+      web_server:
+        sorting_weight: 7
     temperature2:
       name: "BMS Temperatur 2"
+      web_server:
+        sorting_weight: 8
+    last_successful_update:
+      name: "Letzter erfolgreicher Datensatz"
+      web_server:
+        sorting_weight: 9
+    time_id: sntp_time
 
+# Diagnostic-Group
     cell1_voltage:
       name: "BMS Zelle 1 Spannung"
       entity_category: diagnostic
@@ -137,6 +143,7 @@ switch:
   - platform: ble_client
     ble_client_id: client0
     name: "Enable bluetooth connection"
+    entity_category: config
     id: ble_client_switch0
 
   - platform: template

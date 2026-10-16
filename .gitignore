@@ -16,3 +16,5 @@ local/
 esp32-ble-bms_01_test.yaml
 firmware*
 run*
+AGENTS.md
+changelog*

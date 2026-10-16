@@ -1,10 +1,10 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import ble_client, sensor
+from esphome.components import ble_client, sensor, text_sensor, time
 from esphome.const import CONF_ID
 
 DEPENDENCIES = ["ble_client"]
-AUTO_LOAD = ["sensor"]
+AUTO_LOAD = ["sensor", "text_sensor"]
 MULTI_CONF = True
 
 CONF_ECOWORTHY_BMS_ID = "ecoworthy_bms_id"
@@ -31,6 +31,8 @@ CONF_BATTERY_HEALTH = "battery_health"
 CONF_PROBLEM_CODE = "problem_code"
 CONF_TEMPERATURE1 = "temperature1"
 CONF_TEMPERATURE2 = "temperature2"
+CONF_LAST_SUCCESSFUL_UPDATE = "last_successful_update"
+CONF_TIME_ID = "time_id"
 
 CONFIG_SCHEMA = cv.All(
     cv.Schema(
@@ -127,6 +129,8 @@ CONFIG_SCHEMA = cv.All(
             device_class="temperature",
             state_class="measurement",
         ),
+        cv.Optional(CONF_LAST_SUCCESSFUL_UPDATE): text_sensor.text_sensor_schema(),
+        cv.Optional(CONF_TIME_ID): cv.use_id(time.RealTimeClock),
     })
 
     .extend(ble_client.BLE_CLIENT_SCHEMA)
@@ -161,3 +165,11 @@ async def to_code(config):
         if key in config:
             sens = await sensor.new_sensor(config[key])
             cg.add(getattr(var, method)(sens))
+
+    if CONF_LAST_SUCCESSFUL_UPDATE in config:
+        text = await text_sensor.new_text_sensor(config[CONF_LAST_SUCCESSFUL_UPDATE])
+        cg.add(var.set_last_successful_update_sensor(text))
+
+    if CONF_TIME_ID in config:
+        rtc = await cg.get_variable(config[CONF_TIME_ID])
+        cg.add(var.set_time(rtc))
