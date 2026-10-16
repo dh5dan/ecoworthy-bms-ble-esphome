@@ -5,11 +5,6 @@
 
 #ifdef USE_ESP32
 
-//Diese erste Version stellt die BLE-Kommunikation her,
-//sendet die beiden Initialisierungskommandos aus dem ECO-WORTHY-Treiber
-//und protokolliert empfangene A1-/A2-Pakete.
-//Die Messwerte werten wir erst aus, wenn der Empfang funktioniert.
-
 namespace esphome {
 namespace ecoworthy_bms {
 
