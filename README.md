@@ -6,6 +6,10 @@ Eine externe ESPHome-Komponente zur Überwachung von ECO-WORTHY-LiFePO4-Batterie
 Dieses Projekt implementiert das native ECO-WORTHY-BLE-Protokoll in C++ für ESPHome.  
 Es verwendet **nicht das JBD-Protokoll**.
 
+## Vorschau
+Weboberfläche der ESPHome Eco-Worthy BLE-Komponente
+![Weboberfläche der ESPHome Eco-Worthy BLE-Komponente](docs/preview_1.jpg)
+
 ## Funktionen
 
 * Native BLE-Kommunikation mit ECO-WORTHY-BMS
