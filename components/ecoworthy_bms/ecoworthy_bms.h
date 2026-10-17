@@ -5,6 +5,8 @@
 #include <esp_gattc_api.h>
 #include <vector>
 #include "esphome/components/sensor/sensor.h"
+#include "esphome/components/text_sensor/text_sensor.h"
+#include "esphome/components/time/real_time_clock.h"
 
 namespace esphome {
 namespace ecoworthy_bms {
@@ -29,6 +31,8 @@ class EcoworthyBms : public ble_client::BLEClientNode, public PollingComponent {
  sensor::Sensor *problem_code_sensor_{nullptr};
  sensor::Sensor *temperature1_sensor_{nullptr};
  sensor::Sensor *temperature2_sensor_{nullptr};
+ text_sensor::TextSensor *last_successful_update_sensor_{nullptr};
+ time::RealTimeClock *time_{nullptr};
 
  bool show_log_values_{false};
  bool show_log_raw_data_{false};
@@ -51,6 +55,10 @@ class EcoworthyBms : public ble_client::BLEClientNode, public PollingComponent {
  void set_problem_code_sensor(sensor::Sensor *sensor) { problem_code_sensor_ = sensor; }
  void set_temperature1_sensor(sensor::Sensor *sensor) { temperature1_sensor_ = sensor; }
  void set_temperature2_sensor(sensor::Sensor *sensor) { temperature2_sensor_ = sensor; }
+ void set_last_successful_update_sensor(text_sensor::TextSensor *sensor) {
+   last_successful_update_sensor_ = sensor;
+ }
+ void set_time(time::RealTimeClock *time) { time_ = time; }
 
  enum class RequestPhase {
     IDLE,

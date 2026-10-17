@@ -372,6 +372,17 @@ void EcoworthyBms::process_a1_(const std::vector<uint8_t> &data) {
              "Leistung=%.2f W, Kapazitaet=%.2f Ah",
              voltage, soc, current, power, capacity);
   }
+
+  if (this->last_successful_update_sensor_ != nullptr &&
+      this->time_ != nullptr) {
+    auto now = this->time_->now();
+    if (now.is_valid()) {
+      this->last_successful_update_sensor_->publish_state(
+          now.strftime("%d.%m.%Y %H:%M:%S"));
+    } else {
+      ESP_LOGW(TAG, "Zeit noch nicht synchronisiert; Zeitstempel nicht aktualisiert");
+    }
+  }
 }
 
 void EcoworthyBms::process_a2_(const std::vector<uint8_t> &data) {
