@@ -14,6 +14,21 @@ static constexpr uint16_t SERVICE_UUID = 0xFFF0;
 static constexpr uint16_t NOTIFY_UUID = 0xFFF1;
 static constexpr uint16_t WRITE_UUID = 0xFFF2;
 
+bool EcoworthyBms::parse_device(
+    const esp32_ble_tracker::ESPBTDevice &device) {
+  if (this->parent() == nullptr ||
+      std::memcmp(device.address(), this->parent()->get_remote_bda(), 6) != 0) {
+    return false;
+  }
+
+  ESP_LOGI(TAG, "BLE-Advertisement fuer konfigurierte MAC: Name='%s'",
+           device.get_name().c_str());
+  if (this->device_name_sensor_ != nullptr && !device.get_name().empty()) {
+    this->device_name_sensor_->publish_state(device.get_name());
+  }
+  return false;
+}
+
 static const uint8_t INIT_CMD_1[] = {
     0xFF, 0x08, 0x02, 0x00, 0x0B, 0x01, 0x00, 0x64, 0x01,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x2D
@@ -45,7 +60,7 @@ void EcoworthyBms::gattc_event_handler(
       break;
 
     case ESP_GATTC_SEARCH_CMPL_EVT: {
-      auto *notify_char = this->parent_->get_characteristic(
+      auto *notify_char = this->parent()->get_characteristic(
           ble_client::espbt::ESPBTUUID::from_uint16(SERVICE_UUID),
           ble_client::espbt::ESPBTUUID::from_uint16(NOTIFY_UUID));
 
@@ -65,7 +80,7 @@ void EcoworthyBms::gattc_event_handler(
         ESP_LOGE(TAG, "Registrierung der Notifications fehlgeschlagen: %d", status);
       }
 
-      auto *write_char = this->parent_->get_characteristic(
+      auto *write_char = this->parent()->get_characteristic(
           ble_client::espbt::ESPBTUUID::from_uint16(SERVICE_UUID),
           ble_client::espbt::ESPBTUUID::from_uint16(WRITE_UUID));
 
@@ -112,7 +127,7 @@ void EcoworthyBms::gattc_event_handler(
 
      // MAC-Adresse an Position 0, Pakettyp an Position 6
      } else if (std::memcmp(
-                    data, this->parent_->get_remote_bda(), 6) == 0 &&
+                    data, this->parent()->get_remote_bda(), 6) == 0 &&
                 (data[6] == 0xA1 || data[6] == 0xA2)) {
        packet_type = data[6];
      }
@@ -240,8 +255,8 @@ void EcoworthyBms::send_init_command_() {
   }
 
   auto status = esp_ble_gattc_write_char(
-      this->parent_->get_gattc_if(),
-      this->parent_->get_conn_id(),
+      this->parent()->get_gattc_if(),
+      this->parent()->get_conn_id(),
       this->char_write_handle_,
       length,
       const_cast<uint8_t *>(data),
