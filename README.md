@@ -206,7 +206,8 @@ Die folgenden Werte stammen aus aufgezeichneten Paketen des getesteten BMS.
 | Temperatur 1              | `00 E6`             |          23,0 °C |
 | Temperatur 2              | `00 E2`             |          22,6 °C |
 
-Diese Tabelle dokumentiert eine konkrete Aufzeichnung. Sie garantiert nicht, dass alle ECO-WORTHY-Modelle dieselbe Datenstruktur oder Skalierung verwenden.
+Diese Tabelle dokumentiert eine konkrete Aufzeichnung. Sie garantiert nicht, 
+dass alle ECO-WORTHY-Modelle dieselbe Datenstruktur oder Skalierung verwenden.
 
 ## Beispielkonfiguration
 
@@ -221,180 +222,47 @@ ESPHome-Version getestet wurde.
 Die Konfiguration verwendet ESPHome-Funktionen und Syntax, deren Verfügbarkeit von der 
 ESPHome-Version abhängen kann. Bei älteren Versionen können Anpassungen erforderlich sein.
 
-WLAN-Zugangsdaten und Bluetooth-Adresse müssen an die eigene Installation angepasst werden.
+Passe die WLAN-Zugangsdaten und die Bluetooth-Adresse an deine Installation an.
+
+**Zeitsynchronisation für die Anzeige des letzten erfolgreichen Datenempfangs:**
+
+Der ESP32 benötigt eine gültige Uhrzeit, damit der Zeitpunkt des letzten 
+erfolgreichen Datenempfangs korrekt angezeigt werden kann.
+
+* **Mit Internetzugriff:** Die beiden mit `#` auskommentierten 
+Zeilen `servers` und `- "192.168.1.10"` bleiben auskommentiert. 
+ESPHome verwendet dann automatisch die Standardzeitserver `0.pool.ntp.org`, `1.pool.ntp.org` 
+und `2.pool.ntp.org`.
+* **Ohne Internetzugriff:** Wenn ein lokaler NTP-Zeitserver verfügbar ist, 
+entferne die Kommentarzeichen vor beiden Zeilen und trage dessen IP-Adresse ein. 
+Der Zeitserver muss vom ESP32 erreichbar sein.
+* **Ohne erreichbaren Zeitserver:** Die Uhrzeit kann nicht zuverlässig synchronisiert werden. 
+Der angezeigte Zeitpunkt des letzten Datenempfangs ist dann möglicherweise nicht korrekt.
 
 
 ```yaml
-esphome:
-  name: bms01
-  friendly_name: BMS-01
-
-esp32:
-  board: "esp32-s3-devkitc-1"
-  variant: "esp32s3"
-  framework:
-    type: esp-idf
-
-external_components:
-  - source:
-      type: local
-      path: ./components
 
 wifi:
-  ssid: "WIFI-SSID"
-  password: "SecretWifiPwd"
-  reboot_timeout: 0s
-  min_auth_mode: WPA2
-  fast_connect: True
-  on_connect:
-    - logger.log:
-        level: INFO
-        format: "Connected to WiFi. Starting BLE scan."
-  on_disconnect:
-    - logger.log:
-        level: INFO
-        format: "Disconnected from WiFi. Stopping BLE scan."
+  ssid: "WIFI-SSID"  # Wi-Fi SSID des lokalen WLAN-AP eintragen
+  password: "SecretWifiPwd"  # Password des lokalen WLAN-AP eintragen
 
-web_server:
-  port: 80
-  version: 3
-
-ota:
-  platform: web_server
-  on_begin:
-    then:
-      - switch.turn_off: ble_client_switch0
-      - logger.log: "BLE connection suspended for OTA update"
-
-logger:
-  level: INFO
-
+```
+```yaml
 time:
   - platform: sntp
     id: sntp_time
     timezone: "Europe/Berlin"
-    servers:
-     - 127.0.0.1
+#    servers:
+#     - "192.168.1.10"  # IP-Adresse des lokalen NTP-Zeitservers eintragen
 
-# api:
-esp32_ble_tracker:
-  scan_parameters:
-    active: false
+```
+```yaml
 
 ble_client:
   - id: client0
-    mac_address: "00:00:00:00:00:00"
-    on_connect:
-      then:
-        - logger.log:
-            level: INFO
-            format: "Connected to BMS device 0"
-    on_disconnect:
-      then:
-        - logger.log:
-            level: INFO
-            format: "Disconnected from BMS device 0"
+    mac_address: "00:00:00:00:00:00"  # MAC-Adresse des BMS eintragen
 
-ecoworthy_bms:
-  - id: bms0
-    ble_client_id: client0
-    update_interval: 2s
 
-    voltage:
-      name: "BMS Spannung"
-      web_server:
-        sorting_weight: 0
-
-    current:
-      name: "BMS Strom"
-      web_server:
-        sorting_weight: 1
-
-    soc:
-      name: "BMS Ladezustand"
-      web_server:
-        sorting_weight: 2
-    power:
-      name: "BMS Leistung"
-      web_server:
-        sorting_weight: 3
-    capacity:
-      name: "BMS Kapazität"
-      web_server:
-        sorting_weight: 4
-
-    battery_health:
-      name: "BMS Batteriezustand (SoH)"
-      web_server:
-        sorting_weight: 5
-    problem_code:
-      name: "BMS Fehlercode"
-      web_server:
-        sorting_weight: 6
-
-    temperature1:
-      name: "BMS Temperatur 1"
-    temperature2:
-      name: "BMS Temperatur 2"
-
-    cell1_voltage:
-      name: "BMS Zelle 1 Spannung"
-      entity_category: diagnostic
-    cell2_voltage:
-      name: "BMS Zelle 2 Spannung"
-      entity_category: diagnostic
-    cell3_voltage:
-      name: "BMS Zelle 3 Spannung"
-      entity_category: diagnostic
-    cell4_voltage:
-      name: "BMS Zelle 4 Spannung"
-      entity_category: diagnostic
-
-    cell_min_voltage:
-      name: "BMS Zellspannung Minimum"
-      entity_category: diagnostic
-    cell_max_voltage:
-      name: "BMS Zellspannung Maximum"
-      entity_category: diagnostic
-    cell_voltage_diff:
-      name: "BMS Zellspannungsdifferenz"
-      entity_category: diagnostic
-
-switch:
-  - platform: ble_client
-    ble_client_id: client0
-    name: "Enable bluetooth connection"
-    id: ble_client_switch0
-
-  - platform: template
-    name: "BMS Messwert-Log"
-    id: bms_log_values_switch
-    optimistic: true
-    restore_mode: ALWAYS_OFF
-    entity_category: config
-    web_server:
-      sorting_weight: 0
-    turn_on_action:
-      - lambda: |-
-          id(bms0)->show_log_values_ = true;
-    turn_off_action:
-      - lambda: |-
-          id(bms0)->show_log_values_ = false;
-
-  - platform: template
-    name: "BMS Rohdaten-Log"
-    id: bms_log_raw_data_switch
-    optimistic: true
-    restore_mode: ALWAYS_OFF
-    entity_category: config
-    web_server:
-      sorting_weight: 1
-    turn_on_action:
-      - lambda: |-
-          id(bms0)->show_log_raw_data_ = true;
-    turn_off_action:
-      - lambda: |-
-          id(bms0)->show_log_raw_data_ = false;
 ```
 
 ## Logging

@@ -14,8 +14,8 @@ external_components:
       path: ./components
 
 wifi:
-  ssid: "WIFI-SSID"
-  password: "SecretWifiPwd"
+  ssid: "WIFI-SSID"  # Wi-Fi SSID des lokalen WLAN-AP eintragen
+  password: "SecretWifiPwd"  # Password des lokalen WLAN-AP eintragen
   reboot_timeout: 0s
   min_auth_mode: WPA2
   fast_connect: True
@@ -46,8 +46,8 @@ time:
   - platform: sntp
     id: sntp_time
     timezone: "Europe/Berlin"
-    servers:
-     - 127.0.0.1
+#    servers:
+#     - "192.168.1.10"  # IP-Adresse des lokalen NTP-Zeitservers eintragen
 
 # api:
 esp32_ble_tracker:
@@ -56,7 +56,7 @@ esp32_ble_tracker:
 
 ble_client:
   - id: client0
-    mac_address: "00:00:00:00:00:00"
+    mac_address: "00:00:00:00:00:00" # MAC-Adresse des BMS eintragen
     on_connect:
       then:
         - logger.log:
