@@ -2,6 +2,7 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/ble_client/ble_client.h"
+#include "esphome/components/esp32_ble_tracker/esp32_ble_tracker.h"
 #include <esp_gattc_api.h>
 #include <vector>
 #include "esphome/components/sensor/sensor.h"
@@ -11,7 +12,9 @@
 namespace esphome {
 namespace ecoworthy_bms {
 
-class EcoworthyBms : public ble_client::BLEClientNode, public PollingComponent {
+class EcoworthyBms : public ble_client::BLEClientNode,
+                     public esp32_ble_tracker::ESPBTDeviceListener,
+                     public PollingComponent {
  public:
  sensor::Sensor *voltage_sensor_{nullptr};
  sensor::Sensor *soc_sensor_{nullptr};
@@ -32,6 +35,7 @@ class EcoworthyBms : public ble_client::BLEClientNode, public PollingComponent {
  sensor::Sensor *temperature1_sensor_{nullptr};
  sensor::Sensor *temperature2_sensor_{nullptr};
  text_sensor::TextSensor *last_successful_update_sensor_{nullptr};
+ text_sensor::TextSensor *device_name_sensor_{nullptr};
  time::RealTimeClock *time_{nullptr};
 
  bool show_log_values_{false};
@@ -58,6 +62,9 @@ class EcoworthyBms : public ble_client::BLEClientNode, public PollingComponent {
  void set_last_successful_update_sensor(text_sensor::TextSensor *sensor) {
    last_successful_update_sensor_ = sensor;
  }
+ void set_device_name_sensor(text_sensor::TextSensor *sensor) {
+   device_name_sensor_ = sensor;
+ }
  void set_time(time::RealTimeClock *time) { time_ = time; }
 
  enum class RequestPhase {
@@ -72,6 +79,8 @@ class EcoworthyBms : public ble_client::BLEClientNode, public PollingComponent {
   void gattc_event_handler(esp_gattc_cb_event_t event,
                            esp_gatt_if_t gattc_if,
                            esp_ble_gattc_cb_param_t *param) override;
+
+  bool parse_device(const esp32_ble_tracker::ESPBTDevice &device) override;
 
   void dump_config() override;
   void update() override;

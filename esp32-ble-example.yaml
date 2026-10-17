@@ -113,6 +113,10 @@ ecoworthy_bms:
       name: "Letzter erfolgreicher Datensatz"
       web_server:
         sorting_weight: 9
+    device_name:
+      name: "BMS BLE Gerätename"
+      web_server:
+        sorting_weight: 10
     time_id: sntp_time
 
 # Diagnostic-Group

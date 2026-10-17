@@ -1,9 +1,9 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import ble_client, sensor, text_sensor, time
+from esphome.components import ble_client, esp32_ble_tracker, sensor, text_sensor, time
 from esphome.const import CONF_ID
 
-DEPENDENCIES = ["ble_client"]
+DEPENDENCIES = ["ble_client", "esp32_ble_tracker"]
 AUTO_LOAD = ["sensor", "text_sensor"]
 MULTI_CONF = True
 
@@ -12,7 +12,10 @@ CONF_ECOWORTHY_BMS_ID = "ecoworthy_bms_id"
 ecoworthy_bms_ns = cg.esphome_ns.namespace("ecoworthy_bms")
 
 EcoworthyBms = ecoworthy_bms_ns.class_(
-"EcoworthyBms", ble_client.BLEClientNode, cg.PollingComponent
+    "EcoworthyBms",
+    ble_client.BLEClientNode,
+    cg.PollingComponent,
+    esp32_ble_tracker.ESPBTDeviceListener,
 )
 
 CONF_VOLTAGE = "voltage"
@@ -32,6 +35,7 @@ CONF_PROBLEM_CODE = "problem_code"
 CONF_TEMPERATURE1 = "temperature1"
 CONF_TEMPERATURE2 = "temperature2"
 CONF_LAST_SUCCESSFUL_UPDATE = "last_successful_update"
+CONF_DEVICE_NAME = "device_name"
 CONF_TIME_ID = "time_id"
 
 CONFIG_SCHEMA = cv.All(
@@ -130,10 +134,12 @@ CONFIG_SCHEMA = cv.All(
             state_class="measurement",
         ),
         cv.Optional(CONF_LAST_SUCCESSFUL_UPDATE): text_sensor.text_sensor_schema(),
+        cv.Optional(CONF_DEVICE_NAME): text_sensor.text_sensor_schema(),
         cv.Optional(CONF_TIME_ID): cv.use_id(time.RealTimeClock),
     })
 
     .extend(ble_client.BLE_CLIENT_SCHEMA)
+    .extend(esp32_ble_tracker.ESP_BLE_DEVICE_SCHEMA)
     .extend(cv.polling_component_schema("2s")),
 )
 
@@ -141,6 +147,7 @@ async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await ble_client.register_ble_node(var, config)
+    await esp32_ble_tracker.register_ble_device(var, config)
 
     sensor_map = {
         CONF_VOLTAGE: "set_voltage_sensor",
@@ -169,6 +176,10 @@ async def to_code(config):
     if CONF_LAST_SUCCESSFUL_UPDATE in config:
         text = await text_sensor.new_text_sensor(config[CONF_LAST_SUCCESSFUL_UPDATE])
         cg.add(var.set_last_successful_update_sensor(text))
+
+    if CONF_DEVICE_NAME in config:
+        text = await text_sensor.new_text_sensor(config[CONF_DEVICE_NAME])
+        cg.add(var.set_device_name_sensor(text))
 
     if CONF_TIME_ID in config:
         rtc = await cg.get_variable(config[CONF_TIME_ID])
