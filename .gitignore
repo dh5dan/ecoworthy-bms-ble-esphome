@@ -14,7 +14,9 @@ __pycache__/
 
 local/
 esp32-ble-bms_01_test.yaml
+esp32-ble-bms_02_test.yaml
+esp32-ble-bms_03_test.yaml
 firmware*
 run*
 AGENTS.md
-changelog*
+wwwjs_src

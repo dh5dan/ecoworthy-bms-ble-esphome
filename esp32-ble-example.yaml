@@ -31,6 +31,8 @@ wifi:
 web_server:
   port: 80
   version: 3
+  js_include: "./v3/www_local.js"
+  js_url: ""
 
 ota:
   platform: web_server
